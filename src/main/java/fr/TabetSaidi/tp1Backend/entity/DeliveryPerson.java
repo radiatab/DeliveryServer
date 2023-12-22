@@ -1,62 +1,56 @@
 package fr.TabetSaidi.tp1Backend.entity;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
-@Table(name="delivery")
+@Table(name = "deliveryperson")
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class DeliveryPerson implements Serializable {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
+
+    @Column(nullable = false)
     private boolean available;
+
     @Column(name = "creationDate")
     private LocalDate creationDate;
 
-    public DeliveryPerson() {
-    }
+    @OneToMany(mappedBy = "deliveryPerson")
+    private List<Delivery> deliveries;
 
-    public DeliveryPerson(Long id, String name, boolean available) {
-        this.id = id;
-        this.name = name;
-        this.available = available;
-    }
+    @ManyToMany
+    @JoinTable(
+            name = "deliveryperson_tour",
+            joinColumns = @JoinColumn(name = "deliveryperson_id"),
+            inverseJoinColumns = @JoinColumn(name = "tour_id")
+    )
+    private List<Tour> tours;
 
-    public DeliveryPerson(String name, boolean available) {
-        this.name = name;
-        this.available = available;
-    }
+    public void addTour(Tour tour) {
+        if (this.tours == null) {
+            this.tours = new ArrayList<>(); // Initialisation de la liste si elle est null
+        }
 
-    public Long getId() {
-        return id;
-    }
+        if (!this.tours.isEmpty()) {
+            throw new IllegalStateException("Ce livreur est déjà associé à une tournée en cours.");
+        }
 
-    public String getName() {
-        return name;
+        this.tours.add(tour);
+        tour.setDeliveryPerson(this);
     }
-
-    public boolean isAvailable() {
-        return available;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public void setAvailable(boolean available) {
-        this.available = available;
-    }
-    public LocalDate getCreationDate() {
-        return creationDate;
-    }
-
-    public void setCreationDate(LocalDate creationDate) {
-        this.creationDate = creationDate;
-    }
-
 }
